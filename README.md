@@ -21,21 +21,12 @@ Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video 
 
 ## Installation
 
-### Variante A: Lokale Datei
-
-1. `obs-video-timer-dock.html` an einen festen Ort speichern, z. B. `C:\OBS-Dock\obs-video-timer-dock.html`
-2. In OBS: **Docks → Benutzerdefinierte Browser-Docks**
-3. Namen vergeben und als URL eintragen:
+1. In OBS: **Docks → Benutzerdefinierte Browser-Docks**
+2. Namen vergeben und als URL eintragen:
    ```
-   file:///C:/OBS-Dock/obs-video-timer-dock.html
+   https://vidiverse.github.io/obs-media-info/
    ```
-4. Erstellen klicken – das Dock erscheint
-
-### Variante B: Über GitHub Pages
-
-1. Repository auf GitHub anlegen und `obs-video-timer-dock.html` hochladen
-2. Unter **Settings → Pages** den Branch `main` und Ordner `/(root)` auswählen, speichern
-3. Die bereitgestellte URL (z. B. `https://DEINNAME.github.io/REPO-NAME/obs-video-timer-dock.html`) in OBS als benutzerdefiniertes Browser-Dock eintragen
+3. Erstellen klicken – das Dock erscheint
 
 ## Einrichtung im Dock
 
