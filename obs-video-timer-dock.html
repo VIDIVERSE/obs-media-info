@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video-Timer</title>
+<style>
+  :root{
+    --bg: #0c0e12;
+    --panel: #15181e;
+    --panel-2: #1b1f27;
+    --border: #262b34;
+    --text: #eef0f3;
+    --muted: #7d8590;
+    --live: #e5383b;
+    --live-dim: rgba(229,56,59,0.16);
+    --pause: #d99a2b;
+    --pause-dim: rgba(217,154,43,0.16);
+  }
+  *{ box-sizing: border-box; }
+  html, body{
+    margin:0; padding:0; height:100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+  }
+  .mono{
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+  }
+  #app{ display:flex; flex-direction:column; height:100%; }
+
+  header{
+    display:flex; align-items:center; gap:8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink:0;
+  }
+  header .title{ font-weight:600; letter-spacing:0.2px; flex:1; }
+  .conn{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); }
+  .dot{ width:7px; height:7px; border-radius:50%; background:#4a4f59; transition: background .2s; }
+  .dot.online{ background:#3ecf6e; }
+  .dot.connecting{ background:#d99a2b; }
+  .dot.offline{ background:#e5383b; }
+  #gear{
+    width:26px; height:26px; border-radius:6px; border:1px solid var(--border);
+    background: var(--panel-2); color: var(--muted); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; line-height:1;
+  }
+  #gear:hover{ color: var(--text); border-color:#3a3f4a; }
+
+  #settings{
+    display:none; flex-direction:column; gap:8px;
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    background: var(--panel-2);
+    flex-shrink:0;
+  }
+  #settings.open{ display:flex; }
+  .row{ display:flex; gap:8px; }
+  .field{ display:flex; flex-direction:column; gap:4px; flex:1; }
+  .field.small{ flex: 0 0 84px; }
+  .field label{ font-size:11px; color:var(--muted); }
+  .field input{
+    background: var(--bg); border:1px solid var(--border); color:var(--text);
+    border-radius:6px; padding:6px 8px; font-size:13px;
+  }
+  .field input:focus{ outline:none; border-color:#4a4f59; }
+  #connect-btn{
+    margin-top:2px; align-self:flex-start;
+    background: var(--panel); border:1px solid var(--border); color: var(--text);
+    padding:6px 14px; border-radius:6px; cursor:pointer; font-size:13px;
+  }
+  #connect-btn:hover{ border-color:#4a4f59; }
+  .hint{ font-size:11px; color:var(--muted); line-height:1.5; }
+
+  main{ flex:1; overflow-y:auto; padding: 12px; display:flex; flex-direction:column; gap:10px; }
+
+  .card{
+    background: var(--panel);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding: 12px 14px;
+  }
+  .card-head{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .name{ font-weight:600; font-size:13px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pill{
+    display:flex; align-items:center; gap:5px;
+    font-size:11px; padding:3px 8px; border-radius:20px; flex-shrink:0;
+  }
+  .pill.playing{ background: var(--live-dim); color: var(--live); }
+  .pill.paused{ background: var(--pause-dim); color: var(--pause); }
+  .pdot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
+  .pill.playing .pdot{ animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+
+  .times{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .time-block .label{ font-size:11px; color:var(--muted); margin-bottom:2px; }
+  .time-block.right{ text-align:right; }
+  .time-block .value{ font-size:22px; font-weight:600; letter-spacing:0.3px; }
+  .time-block .value.accent{ color: var(--live); }
+
+  .bar{ height:4px; background:var(--border); border-radius:4px; overflow:hidden; }
+  .bar .fill{ height:100%; background: var(--live); border-radius:4px; transition: width .2s linear; }
+
+  #empty{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; color: var(--muted); text-align:center; padding: 20px;
+  }
+  #empty .ring{ width:34px; height:34px; border-radius:50%; border:2px solid var(--border); }
+  #empty-text{ font-size:13px; max-width: 220px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <span class="title">Video-Timer</span>
+    <span class="conn"><span class="dot" id="conn-dot"></span><span id="conn-text">Nicht verbunden</span></span>
+    <button id="gear" title="Verbindungseinstellungen">⚙</button>
+  </header>
+
+  <div id="settings" class="open">
+    <div class="row">
+      <div class="field">
+        <label for="host">Host</label>
+        <input id="host" type="text" value="localhost">
+      </div>
+      <div class="field small">
+        <label for="port">Port</label>
+        <input id="port" type="text" value="4455">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="password">obs-websocket-Passwort (falls gesetzt)</label>
+        <input id="password" type="password" placeholder="leer lassen, falls Auth deaktiviert">
+      </div>
+    </div>
+    <button id="connect-btn">Verbinden</button>
+    <div class="hint">Server-Einstellungen in OBS: Werkzeuge → obs-websocket-Einstellungen. Erkannt werden Medienquellen (Video/VLC) in der aktuell aktiven Programm-Szene.</div>
+  </div>
+
+  <main>
+    <div id="list"></div>
+    <div id="empty">
+      <div class="ring"></div>
+      <div id="empty-text">Nicht verbunden mit OBS.</div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  let ws = null, identified = false;
+  let reqCounter = 0;
+  const pending = new Map();
+  let reconnectTimer = null;
+  let currentScene = null;
+  let mediaSourceNames = [];
+  let statuses = {};
+  let sceneTimer = null, pollTimer = null, tickTimer = null;
+
+  const $ = id => document.getElementById(id);
+
+  function b64FromBuffer(buf){
+    let binary = '';
+    const bytes = new Uint8Array(buf);
+    for(let i=0;i<bytes.byteLength;i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+  async function sha256b64(str){
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return b64FromBuffer(digest);
+  }
+
+  function setStatus(text, cls){
+    $('conn-dot').className = 'dot ' + (cls || '');
+    $('conn-text').textContent = text;
+  }
+
+  function send(op, d){ ws.send(JSON.stringify({op, d})); }
+
+  function req(requestType, requestData){
+    return new Promise((resolve, reject) => {
+      const requestId = 'r' + (++reqCounter);
+      pending.set(requestId, {resolve, reject});
+      send(6, {requestType, requestId, requestData: requestData || {}});
+      setTimeout(() => {
+        if(pending.has(requestId)){ pending.delete(requestId); reject(new Error('Timeout')); }
+      }, 5000);
+    });
+  }
+
+  function connect(){
+    const host = $('host').value.trim() || 'localhost';
+    const port = $('port').value.trim() || '4455';
+    const password = $('password').value;
+    clearTimeout(reconnectTimer);
+    stopLoops();
+    setStatus('Verbinde…', 'connecting');
+
+    try{
+      ws = new WebSocket('ws://' + host + ':' + port);
+    }catch(e){
+      setStatus('Verbindungsfehler', 'offline');
+      scheduleReconnect();
+      return;
+    }
+
+    ws.onclose = () => {
+      identified = false;
+      setStatus('Getrennt', 'offline');
+      stopLoops();
+      scheduleReconnect();
+    };
+    ws.onerror = () => {};
+
+    ws.onmessage = async (ev) => {
+      let msg;
+      try{ msg = JSON.parse(ev.data); } catch(e){ return; }
+      const op = msg.op, d = msg.d;
+
+      if(op === 0){
+        const identify = { rpcVersion: d.rpcVersion, eventSubscriptions: 2047 };
+        if(d.authentication){
+          const secret = await sha256b64(password + d.authentication.salt);
+          identify.authentication = await sha256b64(secret + d.authentication.challenge);
+        }
+        send(1, identify);
+      } else if(op === 2){
+        identified = true;
+        setStatus('Verbunden', 'online');
+        startLoops();
+      } else if(op === 7){
+        const p = pending.get(d.requestId);
+        if(p){
+          pending.delete(d.requestId);
+          if(d.requestStatus.result) p.resolve(d.responseData || {});
+          else p.reject(new Error(d.requestStatus.comment || 'Anfrage fehlgeschlagen'));
+        }
+      } else if(op === 5){
+        handleEvent(d.eventType);
+      }
+    };
+  }
+
+  function scheduleReconnect(){
+    reconnectTimer = setTimeout(connect, 3000);
+  }
+
+  function handleEvent(type){
+    if(type === 'CurrentProgramSceneChanged' || type === 'SceneItemEnableStateChanged' ||
+       type === 'SceneItemCreated' || type === 'SceneItemRemoved'){
+      refreshSceneItems();
+    } else if(type === 'MediaInputPlaybackStarted' || type === 'MediaInputPlaybackEnded' ||
+              type === 'MediaInputPlaybackPaused' || type === 'MediaInputPlaybackRestarted'){
+      pollMedia();
+    }
+  }
+
+  async function refreshSceneItems(){
+    try{
+      const cur = await req('GetCurrentProgramScene');
+      currentScene = cur.currentProgramSceneName;
+      const list = await req('GetSceneItemList', {sceneName: currentScene});
+      const names = list.sceneItems
+        .filter(it => it.sceneItemEnabled && (it.inputKind === 'ffmpeg_source' || it.inputKind === 'vlc_source'))
+        .map(it => it.sourceName);
+      mediaSourceNames = names;
+      Object.keys(statuses).forEach(key => { if(!names.includes(key)) delete statuses[key]; });
+      await pollMedia();
+    }catch(e){ /* Szene evtl. gerade im Wechsel */ }
+  }
+
+  async function pollMedia(){
+    await Promise.all(mediaSourceNames.map(async name => {
+      try{
+        const st = await req('GetMediaInputStatus', {inputName: name});
+        statuses[name] = {
+          state: st.mediaState,
+          duration: st.mediaDuration,
+          cursor: st.mediaCursor,
+          ts: performance.now()
+        };
+      }catch(e){ delete statuses[name]; }
+    }));
+    render();
+  }
+
+  function startLoops(){
+    refreshSceneItems();
+    sceneTimer = setInterval(refreshSceneItems, 3000);
+    pollTimer = setInterval(pollMedia, 1000);
+    tickTimer = setInterval(render, 200);
+  }
+  function stopLoops(){
+    clearInterval(sceneTimer); clearInterval(pollTimer); clearInterval(tickTimer);
+    statuses = {}; mediaSourceNames = [];
+    render();
+  }
+
+  function fmtTime(ms){
+    let s = Math.max(0, Math.round(ms / 1000));
+    const h = Math.floor(s / 3600); s %= 3600;
+    const m = Math.floor(s / 60); s %= 60;
+    const p = n => String(n).padStart(2, '0');
+    return h > 0 ? (h + ':' + p(m) + ':' + p(s)) : (m + ':' + p(s));
+  }
+
+  function escapeHtml(str){
+    return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function render(){
+    const list = $('list');
+    const empty = $('empty');
+
+    if(!identified){
+      list.innerHTML = '';
+      empty.style.display = 'flex';
+      $('empty-text').textContent = 'Nicht verbunden mit OBS.';
+      return;
+    }
+
+    const active = Object.entries(statuses).filter(([,s]) =>
+      s.state === 'OBS_MEDIA_STATE_PLAYING' || s.state === 'OBS_MEDIA_STATE_PAUSED');
+
+    if(active.length === 0){
+      list.innerHTML = '';
+      empty.style.display = 'flex';
+      $('empty-text').textContent = 'Kein Video läuft in der aktuellen Szene.';
+      return;
+    }
+    empty.style.display = 'none';
+
+    list.innerHTML = active.map(([name, s]) => {
+      const playing = s.state === 'OBS_MEDIA_STATE_PLAYING';
+      let cursor = s.cursor;
+      if(playing) cursor = Math.min(s.duration, s.cursor + (performance.now() - s.ts));
+      const remaining = Math.max(0, s.duration - cursor);
+      const pct = s.duration > 0 ? Math.min(100, (cursor / s.duration) * 100) : 0;
+      return (
+        '<div class="card">' +
+          '<div class="card-head">' +
+            '<span class="name">' + escapeHtml(name) + '</span>' +
+            '<span class="pill ' + (playing ? 'playing' : 'paused') + '">' +
+              '<span class="pdot"></span>' + (playing ? 'Läuft' : 'Pause') +
+            '</span>' +
+          '</div>' +
+          '<div class="times">' +
+            '<div class="time-block">' +
+              '<div class="label">Verstrichen</div>' +
+              '<div class="value mono">' + fmtTime(cursor) + '</div>' +
+            '</div>' +
+            '<div class="time-block right">' +
+              '<div class="label">Verbleibend</div>' +
+              '<div class="value mono accent">' + fmtTime(remaining) + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="bar"><div class="fill" style="width:' + pct + '%"></div></div>' +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  $('connect-btn').addEventListener('click', () => { if(ws) ws.close(); connect(); });
+  $('gear').addEventListener('click', () => { $('settings').classList.toggle('open'); });
+
+  render();
+  connect();
+})();
+</script>
+</body>
+</html>
