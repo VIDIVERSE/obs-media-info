@@ -2,7 +2,7 @@
 
 Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video (Medienquelle) gerade in der aktiven Szene läuft, und die verstrichene sowie verbleibende Zeit live anzeigt.
 
-**Version:** v0.4
+**Version:** v0.5
 **Entwickelt für:** JungleCraft Livestreams
 **Erstellt von:** JungleCraft Social Media Team
 
@@ -11,7 +11,7 @@ Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video 
 - Erkennt automatisch alle Medienquellen (Video/VLC-Quelle) in der aktuell aktiven Programm-Szene
 - Zeigt pro Quelle Status (Läuft/Pause), verstrichene Zeit, verbleibende Zeit und einen Fortschrittsbalken
 - Reagiert live auf Szenenwechsel, Sichtbarkeits-Änderungen und Start/Stopp des Videos
-- Quelle über ein Dropdown auswählbar, darunter kleine Pause-/Weiter-Steuerung für die gewählte Quelle
+- Quelle per Klick auf die jeweilige Karte auswählbar, darunter kleine Pause-/Weiter-Steuerung für die gewählte Quelle
 - Verbindet sich automatisch neu, falls OBS neu startet oder die Verbindung abbricht
 - Verbindungseinstellungen (Host/Port/Passwort) sind über ein Zahnrad-Symbol ein- und ausblendbar
 
@@ -46,6 +46,7 @@ Keine Datei herunterladen nötig – einfach die gehostete URL direkt in OBS ein
 
 ## Versionshistorie
 
+- **v0.5** – Quellenauswahl erfolgt jetzt per Klick auf die Karte statt über ein Dropdown
 - **v0.4** – Dropdown zur Quellenauswahl, darunter kleine Pause-/Weiter-Steuerung oberhalb der Versionsanzeige
 - **v0.3** – Versionsnummer und Credits in der Fußzeile ergänzt
 - **v0.2** – Verbindungseinstellungen standardmäßig ausgeblendet, über Zahnrad-Symbol ein-/ausblendbar
