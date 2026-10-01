@@ -2,7 +2,7 @@
 
 Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video (Medienquelle) gerade in der aktiven Szene läuft, und die verstrichene sowie verbleibende Zeit live anzeigt.
 
-**Version:** v0.3
+**Version:** v0.4
 **Entwickelt für:** JungleCraft Livestreams
 **Erstellt von:** JungleCraft Social Media Team
 
@@ -11,6 +11,7 @@ Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video 
 - Erkennt automatisch alle Medienquellen (Video/VLC-Quelle) in der aktuell aktiven Programm-Szene
 - Zeigt pro Quelle Status (Läuft/Pause), verstrichene Zeit, verbleibende Zeit und einen Fortschrittsbalken
 - Reagiert live auf Szenenwechsel, Sichtbarkeits-Änderungen und Start/Stopp des Videos
+- Quelle über ein Dropdown auswählbar, darunter kleine Pause-/Weiter-Steuerung für die gewählte Quelle
 - Verbindet sich automatisch neu, falls OBS neu startet oder die Verbindung abbricht
 - Verbindungseinstellungen (Host/Port/Passwort) sind über ein Zahnrad-Symbol ein- und ausblendbar
 
@@ -20,6 +21,8 @@ Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video 
 - obs-websocket-Server in OBS aktiviert: **Werkzeuge → obs-websocket-Einstellungen**
 
 ## Installation
+
+Keine Datei herunterladen nötig – einfach die gehostete URL direkt in OBS einbinden:
 
 1. In OBS: **Docks → Benutzerdefinierte Browser-Docks**
 2. Namen vergeben und als URL eintragen:
@@ -43,6 +46,7 @@ Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video 
 
 ## Versionshistorie
 
+- **v0.4** – Dropdown zur Quellenauswahl, darunter kleine Pause-/Weiter-Steuerung oberhalb der Versionsanzeige
 - **v0.3** – Versionsnummer und Credits in der Fußzeile ergänzt
 - **v0.2** – Verbindungseinstellungen standardmäßig ausgeblendet, über Zahnrad-Symbol ein-/ausblendbar
 - **v0.1** – Erste Version: automatische Erkennung laufender Medienquellen, Live-Anzeige von verstrichener/verbleibender Zeit
