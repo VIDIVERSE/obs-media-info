@@ -76,19 +76,16 @@
 
   main{ flex:1; overflow-y:auto; padding: 12px; display:flex; flex-direction:column; gap:10px; }
 
-  .source-row select{
-    width:100%;
-    background: var(--panel); border:1px solid var(--border); color: var(--text);
-    border-radius:6px; padding:7px 8px; font-size:13px;
-  }
-  .source-row select:focus{ outline:none; border-color:#4a4f59; }
-
   .card{
     background: var(--panel);
     border:1px solid var(--border);
     border-radius:10px;
     padding: 12px 14px;
+    cursor:pointer;
+    transition: border-color .15s, background .15s;
   }
+  .card:hover{ border-color:#3a3f4a; }
+  .card.selected{ border-color: var(--live); background: #1a1314; }
   .card-head{ display:flex; align-items:center; gap:8px; margin-bottom:10px; }
   .name{ font-weight:600; font-size:13px; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .pill{
@@ -168,11 +165,6 @@
   </div>
 
   <main>
-    <div class="source-row">
-      <select id="source-select">
-        <option value="">Quelle wählen…</option>
-      </select>
-    </div>
     <div id="list"></div>
     <div id="empty">
       <div class="ring"></div>
@@ -185,7 +177,7 @@
     <button id="btn-play" class="ctrl-btn" disabled>▶ Weiter</button>
   </div>
 
-  <footer><span class="version">v0.4</span><br>Entwickelt für JungleCraft Livestreams<br>erstellt von JungleCraft Social Media Team</footer>
+  <footer><span class="version">v0.5</span><br>Entwickelt für JungleCraft Livestreams<br>erstellt von JungleCraft Social Media Team</footer>
 </div>
 
 <script>
@@ -307,7 +299,7 @@
         .filter(it => it.sceneItemEnabled && (it.inputKind === 'ffmpeg_source' || it.inputKind === 'vlc_source'))
         .map(it => it.sourceName);
       mediaSourceNames = names;
-      updateSourceSelect(names);
+      syncSelection(names);
       Object.keys(statuses).forEach(key => { if(!names.includes(key)) delete statuses[key]; });
       await pollMedia();
     }catch(e){ /* Szene evtl. gerade im Wechsel */ }
@@ -328,17 +320,8 @@
     render();
   }
 
-  function updateSourceSelect(names){
-    const sel = $('source-select');
-    const existing = Array.from(sel.options).slice(1).map(o => o.value);
-    const changed = existing.length !== names.length || existing.some((v, i) => v !== names[i]);
-    const prev = sel.value;
-    if(changed){
-      sel.innerHTML = '<option value="">Quelle wählen…</option>' +
-        names.map(n => '<option value="' + escapeHtml(n) + '">' + escapeHtml(n) + '</option>').join('');
-      sel.value = names.includes(prev) ? prev : '';
-    }
-    selectedSource = sel.value;
+  function syncSelection(names){
+    if(selectedSource && !names.includes(selectedSource)) selectedSource = '';
     updateControlsState();
   }
 
@@ -363,9 +346,6 @@
   function stopLoops(){
     clearInterval(sceneTimer); clearInterval(pollTimer); clearInterval(tickTimer);
     statuses = {}; mediaSourceNames = []; selectedSource = '';
-    const sel = $('source-select');
-    sel.innerHTML = '<option value="">Quelle wählen…</option>';
-    sel.value = '';
     updateControlsState();
     render();
   }
@@ -411,7 +391,7 @@
       const remaining = Math.max(0, s.duration - cursor);
       const pct = s.duration > 0 ? Math.min(100, (cursor / s.duration) * 100) : 0;
       return (
-        '<div class="card">' +
+        '<div class="card' + (name === selectedSource ? ' selected' : '') + '" data-name="' + escapeHtml(name) + '">' +
           '<div class="card-head">' +
             '<span class="name">' + escapeHtml(name) + '</span>' +
             '<span class="pill ' + (playing ? 'playing' : 'paused') + '">' +
@@ -436,9 +416,12 @@
 
   $('connect-btn').addEventListener('click', () => { if(ws) ws.close(); connect(); });
   $('gear').addEventListener('click', () => { $('settings').classList.toggle('open'); });
-  $('source-select').addEventListener('change', () => {
-    selectedSource = $('source-select').value;
+  $('list').addEventListener('click', (ev) => {
+    const card = ev.target.closest('.card');
+    if(!card) return;
+    selectedSource = (selectedSource === card.dataset.name) ? '' : card.dataset.name;
     updateControlsState();
+    render();
   });
   $('btn-pause').addEventListener('click', () => triggerMedia('OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE'));
   $('btn-play').addEventListener('click', () => triggerMedia('OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PLAY'));
