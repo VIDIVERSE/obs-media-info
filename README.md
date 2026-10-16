@@ -6,7 +6,7 @@ A free custom browser dock for OBS Studio that automatically detects which video
 
 **Requirements:** OBS Studio 28 or newer with the obs-websocket server enabled (**Tools → obs-websocket Settings**). Click the gear icon in the dock to enter host (default `localhost`), port (default `4455`) and password if set.
 
-**Features:** automatic media source detection in the active scene, live countdown, pause/resume for the selected source, auto-reconnect, collapsible connection settings, single HTML file without dependencies.
+**Features:** automatic media source detection in the active scene, live countdown, pause/resume for the selected source, auto-reconnect, remembered connection settings (optional), collapsible settings panel, single HTML file without dependencies.
 
 **Limitations:** media sources inside nested scenes or groups are not detected. Supported types: media source (`ffmpeg_source`) and VLC video source (`vlc_source`).
 
@@ -22,7 +22,7 @@ Keywords: OBS Studio, media source timer, video countdown, remaining time, brows
 
 Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video (Medienquelle) gerade in der aktiven Szene läuft, und die verstrichene sowie verbleibende Zeit live anzeigt.
 
-**Version:** v0.6
+**Version:** v0.7
 **Entwickelt für:** JungleCraft Livestreams
 **Erstellt von:** Junglecraft Social-Media-Team
 
@@ -70,6 +70,7 @@ MIT, siehe [LICENSE](LICENSE). Dieses Projekt steht in keiner Verbindung zum OBS
 
 ## Versionshistorie
 
+- **v0.7** – Verbindungsdaten (inkl. Passwort) werden auf Wunsch gespeichert, kein erneutes Eingeben nach OBS-Neustart
 - **v0.6** – Schreibweise des Team-Credits korrigiert (Junglecraft Social-Media-Team)
 - **v0.5** – Quellenauswahl erfolgt jetzt per Klick auf die Karte statt über ein Dropdown
 - **v0.4** – Dropdown zur Quellenauswahl, darunter kleine Pause-/Weiter-Steuerung oberhalb der Versionsanzeige

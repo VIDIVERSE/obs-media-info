@@ -27,8 +27,8 @@ OBS Video-Timer-Dock: ein Custom Browser Dock für OBS Studio, das über obs-web
    - `erstellt von Junglecraft Social-Media-Team`
 3. **Sprache der Oberfläche: Deutsch.** Antworten an den Nutzer ebenfalls auf Deutsch.
 4. **Eine einzige Datei, keine externen Skripte, Fonts oder CDNs.** Das Dock muss auch offline im OBS-Browser (Chromium/CEF) laufen.
-5. **Kein `localStorage`/`sessionStorage`.** Zustand bleibt im Arbeitsspeicher.
-6. **Keine Secrets committen.** Das obs-websocket-Passwort wird nur im Dock eingegeben und nie gespeichert. Zugriffstokens gehören nie in Dateien oder Commit-Nachrichten.
+5. **`localStorage` nur für die Verbindungsdaten** (Schlüssel `jc-obs-video-timer`, nur wenn „Verbindungsdaten merken" aktiv ist, immer mit try/catch). Sonst bleibt Zustand im Arbeitsspeicher.
+6. **Keine Secrets committen.** Das obs-websocket-Passwort wird nie im Repo gespeichert, nur optional im lokalen Browser-Speicher des Nutzers. Zugriffstokens gehören nie in Dateien oder Commit-Nachrichten.
 
 ## Verhalten der Oberfläche (nicht versehentlich ändern)
 
@@ -43,7 +43,7 @@ OBS Video-Timer-Dock: ein Custom Browser Dock für OBS Studio, das über obs-web
 - Genutzte Requests: `GetCurrentProgramScene`, `GetSceneItemList`, `GetMediaInputStatus`, `TriggerMediaInputAction`.
 - Genutzte Events: `CurrentProgramSceneChanged`, `SceneItemEnableStateChanged`, `SceneItemCreated`, `SceneItemRemoved`, `MediaInputPlayback*`.
 - Zeitangaben von obs-websocket sind Millisekunden. Zwischen den Abfragen (1 Sekunde) wird die Anzeige lokal interpoliert.
-- Verbindung baut sich bei Abbruch alle 3 Sekunden automatisch neu auf.
+- Verbindung baut sich bei Abbruch alle 3 Sekunden automatisch neu auf. Bei Close-Code 4009 (Authentifizierung fehlgeschlagen) kein Reconnect, stattdessen werden die Einstellungen geöffnet.
 
 ## Bekannte Einschränkungen
 

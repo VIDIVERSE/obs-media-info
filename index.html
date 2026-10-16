@@ -72,6 +72,7 @@
     padding:6px 14px; border-radius:6px; cursor:pointer; font-size:13px;
   }
   #connect-btn:hover{ border-color:#4a4f59; }
+  .remember{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); cursor:pointer; }
   .hint{ font-size:11px; color:var(--muted); line-height:1.5; }
 
   main{ flex:1; overflow-y:auto; padding: 12px; display:flex; flex-direction:column; gap:10px; }
@@ -160,6 +161,7 @@
         <input id="password" type="password" placeholder="leer lassen, falls Auth deaktiviert">
       </div>
     </div>
+    <label class="remember"><input id="remember" type="checkbox" checked> Verbindungsdaten merken</label>
     <button id="connect-btn">Verbinden</button>
     <div class="hint">Server-Einstellungen in OBS: Werkzeuge → obs-websocket-Einstellungen. Erkannt werden Medienquellen (Video/VLC) in der aktuell aktiven Programm-Szene.</div>
   </div>
@@ -177,7 +179,7 @@
     <button id="btn-play" class="ctrl-btn" disabled>▶ Weiter</button>
   </div>
 
-  <footer><span class="version">v0.6</span><br>Entwickelt für JungleCraft Livestreams<br>erstellt von Junglecraft Social-Media-Team</footer>
+  <footer><span class="version">v0.7</span><br>Entwickelt für JungleCraft Livestreams<br>erstellt von Junglecraft Social-Media-Team</footer>
 </div>
 
 <script>
@@ -223,10 +225,34 @@
     });
   }
 
+  const STORE_KEY = 'jc-obs-video-timer';
+
+  function loadSettings(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if(!raw) return;
+      const d = JSON.parse(raw);
+      if(d.host) $('host').value = d.host;
+      if(d.port) $('port').value = d.port;
+      if(d.password) $('password').value = d.password;
+    }catch(e){ /* Speicher nicht verfügbar */ }
+  }
+
+  function saveSettings(host, port, password){
+    try{
+      if($('remember').checked){
+        localStorage.setItem(STORE_KEY, JSON.stringify({host, port, password}));
+      } else {
+        localStorage.removeItem(STORE_KEY);
+      }
+    }catch(e){ /* Speicher nicht verfügbar */ }
+  }
+
   function connect(){
     const host = $('host').value.trim() || 'localhost';
     const port = $('port').value.trim() || '4455';
     const password = $('password').value;
+    saveSettings(host, port, password);
     clearTimeout(reconnectTimer);
     stopLoops();
     setStatus('Verbinde…', 'connecting');
@@ -239,10 +265,16 @@
       return;
     }
 
-    ws.onclose = () => {
+    ws.onclose = (ev) => {
       identified = false;
-      setStatus('Getrennt', 'offline');
       stopLoops();
+      if(ev && ev.code === 4009){
+        // Authentifizierung fehlgeschlagen: kein Dauer-Reconnect, Einstellungen zeigen
+        setStatus('Passwort nötig oder falsch', 'offline');
+        $('settings').classList.add('open');
+        return;
+      }
+      setStatus('Getrennt', 'offline');
       scheduleReconnect();
     };
     ws.onerror = () => {};
@@ -426,6 +458,7 @@
   $('btn-pause').addEventListener('click', () => triggerMedia('OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE'));
   $('btn-play').addEventListener('click', () => triggerMedia('OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PLAY'));
 
+  loadSettings();
   render();
   connect();
 })();
