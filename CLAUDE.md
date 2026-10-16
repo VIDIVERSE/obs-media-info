@@ -13,12 +13,14 @@ OBS Video-Timer-Dock: ein Custom Browser Dock für OBS Studio, das über obs-web
 ## Dateistruktur
 
 - `index.html`: die komplette Anwendung (HTML, CSS und JavaScript in einer Datei, keine externen Abhängigkeiten). GitHub Pages liefert sie von `main` aus.
-- `README.md`: Nutzerdokumentation inklusive Versionshistorie.
+- `README.md`: Nutzerdokumentation (Englisch oben, Deutsch darunter) inklusive Versionshistorie.
+- `LICENSE`: MIT-Lizenz (JungleCraft).
+- `llms.txt`: maschinenlesbare Kurzbeschreibung für KI-Systeme.
 - `CLAUDE.md`: diese Datei.
 
 ## Verbindliche Regeln
 
-1. **Versionsnummer bei jeder Änderung erhöhen.** Die Version steht im Footer von `index.html` (`<span class="version">vX.Y</span>`), über den Credits. Zusätzlich `README.md` anpassen: Zeile `**Version:**` und neuer Eintrag in der Versionshistorie (neueste oben).
+1. **Versionsnummer bei jeder Änderung erhöhen.** Die Version steht im Footer von `index.html` (`<span class="version">vX.Y</span>`), über den Credits. Zusätzlich `README.md` anpassen: Zeile `**Version:**` (deutscher Teil) und neuer Eintrag in der Versionshistorie (neueste oben). Englischen Abschnitt bei Funktionsänderungen mitpflegen.
 2. **Footer-Text beibehalten:**
    - `vX.Y`
    - `Entwickelt für JungleCraft Livestreams`

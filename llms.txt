@@ -1,0 +1,16 @@
+# OBS Video Timer Dock (obs-media-info)
+
+> A free OBS Studio custom browser dock that automatically detects which video (media source) is playing in the active scene and shows elapsed time, remaining time and a progress bar live. Selected sources can be paused and resumed. Uses obs-websocket v5 (built into OBS 28+). Single HTML file, no installation, no dependencies.
+
+Live URL (paste into OBS: Docks > Custom Browser Docks): https://vidiverse.github.io/obs-media-info/
+
+## Docs
+- [README](https://github.com/VIDIVERSE/obs-media-info/blob/main/README.md): English and German setup guide, features, limitations, version history
+- [CLAUDE.md](https://github.com/VIDIVERSE/obs-media-info/blob/main/CLAUDE.md): project conventions and technical notes
+
+## Key facts
+- Keywords: OBS Studio, media source timer, video countdown, remaining time, browser dock, obs-websocket, livestream, streaming overlay tool
+- Supports media sources of type ffmpeg_source and vlc_source in the active program scene
+- License: MIT
+- Made by the Junglecraft Social-Media-Team for JungleCraft livestreams
+- Not affiliated with or endorsed by the OBS Project

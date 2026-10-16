@@ -1,4 +1,24 @@
-# OBS Video-Timer-Dock
+# OBS Video Timer Dock
+
+A free custom browser dock for OBS Studio that automatically detects which video (media source) is playing in the active scene and shows the **elapsed time, remaining time and a progress bar** live. Click a source to select it and pause or resume it right from the dock.
+
+**Quick start:** In OBS go to **Docks → Custom Browser Docks**, add a name and paste this URL: `https://vidiverse.github.io/obs-media-info/`. No download needed.
+
+**Requirements:** OBS Studio 28 or newer with the obs-websocket server enabled (**Tools → obs-websocket Settings**). Click the gear icon in the dock to enter host (default `localhost`), port (default `4455`) and password if set.
+
+**Features:** automatic media source detection in the active scene, live countdown, pause/resume for the selected source, auto-reconnect, collapsible connection settings, single HTML file without dependencies.
+
+**Limitations:** media sources inside nested scenes or groups are not detected. Supported types: media source (`ffmpeg_source`) and VLC video source (`vlc_source`).
+
+**License:** MIT. This project is not affiliated with or endorsed by the OBS Project.
+
+Keywords: OBS Studio, media source timer, video countdown, remaining time, browser dock, obs-websocket, livestream.
+
+---
+
+## Deutsch
+
+### OBS Video-Timer-Dock
 
 Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video (Medienquelle) gerade in der aktiven Szene läuft, und die verstrichene sowie verbleibende Zeit live anzeigt.
 
@@ -43,6 +63,10 @@ Keine Datei herunterladen nötig – einfach die gehostete URL direkt in OBS ein
 
 - Medienquellen in verschachtelten Szenen oder Gruppen werden aktuell nicht erkannt, nur Quellen direkt in der aktiven Szene
 - Unterstützt Medienquellen vom Typ `ffmpeg_source` (Medienquelle) und `vlc_source` (VLC-Video-Quelle)
+
+## Lizenz
+
+MIT, siehe [LICENSE](LICENSE). Dieses Projekt steht in keiner Verbindung zum OBS Project.
 
 ## Versionshistorie
 
