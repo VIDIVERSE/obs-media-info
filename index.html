@@ -96,6 +96,9 @@
   }
   .pill.playing{ background: var(--live-dim); color: var(--live); }
   .pill.paused{ background: var(--pause-dim); color: var(--pause); }
+  .pill.ended{ background: rgba(125,133,144,0.16); color: var(--muted); }
+  .card.ended .value.accent{ color: var(--muted); }
+  .card.ended .bar .fill{ background: var(--muted); }
   .pdot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
   .pill.playing .pdot{ animation: pulse 1.4s ease-in-out infinite; }
   @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
@@ -180,7 +183,7 @@
     <button id="btn-play" class="ctrl-btn" disabled>▶ Weiter</button>
   </div>
 
-  <footer><span class="version">v0.8</span><br>Entwickelt für JungleCraft Livestreams<br>erstellt von Junglecraft Social-Media-Team</footer>
+  <footer><span class="version">v0.9</span><br>Entwickelt für JungleCraft Livestreams<br>erstellt von Junglecraft Social-Media-Team</footer>
 </div>
 
 <script>
@@ -193,6 +196,10 @@
   let mediaSourceNames = [];
   let selectedSource = '';
   let statuses = {};
+  const LINGER_MS = 5000;   // so lange bleibt eine beendete Karte sichtbar
+  const FADE_MS = 1000;     // Ausblenden in der letzten Sekunde
+  let lastActive = {};      // Quellen, die zuletzt läuft/pausiert waren
+  let lingering = {};       // beendete Quellen: name -> {until, duration}
   let sceneTimer = null, pollTimer = null, tickTimer = null;
 
   const $ = id => document.getElementById(id);
@@ -378,7 +385,7 @@
   }
   function stopLoops(){
     clearInterval(sceneTimer); clearInterval(pollTimer); clearInterval(tickTimer);
-    statuses = {}; mediaSourceNames = []; selectedSource = '';
+    statuses = {}; mediaSourceNames = []; selectedSource = ''; lastActive = {}; lingering = {};
     updateControlsState();
     render();
   }
@@ -406,8 +413,30 @@
       return;
     }
 
-    const active = Object.entries(statuses).filter(([,s]) =>
-      s.state === 'OBS_MEDIA_STATE_PLAYING' || s.state === 'OBS_MEDIA_STATE_PAUSED');
+    const now = performance.now();
+    const isActive = st => st && (st.state === 'OBS_MEDIA_STATE_PLAYING' || st.state === 'OBS_MEDIA_STATE_PAUSED');
+
+    // Beendete Videos 5 Sekunden stehen lassen
+    Object.keys(lastActive).forEach(name => {
+      if(isActive(statuses[name])) return;
+      if(statuses[name] && mediaSourceNames.includes(name)){
+        lingering[name] = {until: now + LINGER_MS, duration: lastActive[name].duration};
+      }
+      delete lastActive[name];
+    });
+    mediaSourceNames.forEach(name => {
+      if(isActive(statuses[name])){
+        lastActive[name] = {duration: statuses[name].duration};
+        delete lingering[name];
+      }
+    });
+    Object.keys(lingering).forEach(name => {
+      if(lingering[name].until <= now || !mediaSourceNames.includes(name)) delete lingering[name];
+    });
+
+    const active = mediaSourceNames
+      .filter(name => isActive(statuses[name]) || lingering[name])
+      .map(name => [name, statuses[name]]);
 
     if(active.length === 0){
       list.innerHTML = '';
@@ -418,17 +447,26 @@
     empty.style.display = 'none';
 
     list.innerHTML = active.map(([name, s]) => {
-      const playing = s.state === 'OBS_MEDIA_STATE_PLAYING';
-      let cursor = s.cursor;
-      if(playing) cursor = Math.min(s.duration, s.cursor + (performance.now() - s.ts));
-      const remaining = Math.max(0, s.duration - cursor);
-      const pct = s.duration > 0 ? Math.min(100, (cursor / s.duration) * 100) : 0;
+      const ended = !isActive(s);
+      const playing = !ended && s.state === 'OBS_MEDIA_STATE_PLAYING';
+      let duration = ended ? lingering[name].duration : s.duration;
+      let cursor = ended ? duration : s.cursor;
+      if(playing) cursor = Math.min(duration, s.cursor + (now - s.ts));
+      const remaining = Math.max(0, duration - cursor);
+      const pct = duration > 0 ? Math.min(100, (cursor / duration) * 100) : 0;
+      let style = '';
+      if(ended){
+        const left = lingering[name].until - now;
+        if(left < FADE_MS) style = ' style="opacity:' + Math.max(0, left / FADE_MS).toFixed(2) + '"';
+      }
+      const pillClass = ended ? 'ended' : (playing ? 'playing' : 'paused');
+      const pillText = ended ? 'Beendet' : (playing ? 'Läuft' : 'Pause');
       return (
-        '<div class="card' + (name === selectedSource ? ' selected' : '') + '" data-name="' + escapeHtml(name) + '">' +
+        '<div class="card' + (ended ? ' ended' : '') + (name === selectedSource ? ' selected' : '') + '" data-name="' + escapeHtml(name) + '"' + style + '>' +
           '<div class="card-head">' +
             '<span class="name">' + escapeHtml(name) + '</span>' +
-            '<span class="pill ' + (playing ? 'playing' : 'paused') + '">' +
-              '<span class="pdot"></span>' + (playing ? 'Läuft' : 'Pause') +
+            '<span class="pill ' + pillClass + '">' +
+              '<span class="pdot"></span>' + pillText +
             '</span>' +
           '</div>' +
           '<div class="times">' +

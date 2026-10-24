@@ -6,7 +6,7 @@ A free custom browser dock for OBS Studio that automatically detects which video
 
 **Requirements:** OBS Studio 28 or newer with the obs-websocket server enabled (**Tools → obs-websocket Settings**). Click the gear icon in the dock to enter host (default `localhost`), port (default `4455`) and password if set.
 
-**Features:** automatic media source detection in the active scene, live countdown, pause/resume for the selected source, auto-reconnect, remembered connection settings (optional), collapsible settings panel, single HTML file without dependencies.
+**Features:** automatic media source detection in the active scene, live countdown, finished videos stay visible for 5 seconds before fading out, pause/resume for the selected source, auto-reconnect, remembered connection settings (optional), collapsible settings panel, single HTML file without dependencies.
 
 **Limitations:** media sources inside nested scenes or groups are not detected. Supported types: media source (`ffmpeg_source`) and VLC video source (`vlc_source`).
 
@@ -22,7 +22,7 @@ Keywords: OBS Studio, media source timer, video countdown, remaining time, brows
 
 Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video (Medienquelle) gerade in der aktiven Szene läuft, und die verstrichene sowie verbleibende Zeit live anzeigt.
 
-**Version:** v0.8
+**Version:** v0.9
 **Entwickelt für:** JungleCraft Livestreams
 **Erstellt von:** Junglecraft Social-Media-Team
 
@@ -70,6 +70,7 @@ MIT, siehe [LICENSE](LICENSE). Dieses Projekt steht in keiner Verbindung zum OBS
 
 ## Versionshistorie
 
+- **v0.9** – Beendete Videos bleiben noch 5 Sekunden als Karte (Status „Beendet") sichtbar und blenden dann aus
 - **v0.8** – Die ganze Karte ist zuverlässig klickbar (Auswahl reagiert sofort beim Drücken, auch während das Video läuft)
 - **v0.7** – Verbindungsdaten (inkl. Passwort) werden auf Wunsch gespeichert, kein erneutes Eingeben nach OBS-Neustart
 - **v0.6** – Schreibweise des Team-Credits korrigiert (Junglecraft Social-Media-Team)
