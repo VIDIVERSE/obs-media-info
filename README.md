@@ -22,7 +22,7 @@ Keywords: OBS Studio, media source timer, video countdown, remaining time, brows
 
 Ein Custom Browser Dock für OBS Studio, das automatisch erkennt, welches Video (Medienquelle) gerade in der aktiven Szene läuft, und die verstrichene sowie verbleibende Zeit live anzeigt.
 
-**Version:** v0.7
+**Version:** v0.8
 **Entwickelt für:** JungleCraft Livestreams
 **Erstellt von:** Junglecraft Social-Media-Team
 
@@ -70,6 +70,7 @@ MIT, siehe [LICENSE](LICENSE). Dieses Projekt steht in keiner Verbindung zum OBS
 
 ## Versionshistorie
 
+- **v0.8** – Die ganze Karte ist zuverlässig klickbar (Auswahl reagiert sofort beim Drücken, auch während das Video läuft)
 - **v0.7** – Verbindungsdaten (inkl. Passwort) werden auf Wunsch gespeichert, kein erneutes Eingeben nach OBS-Neustart
 - **v0.6** – Schreibweise des Team-Credits korrigiert (Junglecraft Social-Media-Team)
 - **v0.5** – Quellenauswahl erfolgt jetzt per Klick auf die Karte statt über ein Dropdown
