@@ -34,13 +34,13 @@ OBS Video-Timer-Dock: ein Custom Browser Dock für OBS Studio, das über obs-web
 
 - Verbindungseinstellungen (Host, Port, Passwort) sind standardmäßig eingeklappt und über das Zahnrad-Symbol ein-/ausblendbar.
 - Quellen werden per **Klick auf die Karte** ausgewählt (nicht per Dropdown). Erneuter Klick hebt die Auswahl auf.
-- Die Buttons **Pause** und **Weiter** stehen zentriert direkt über der Versionsanzeige und sind nur aktiv, wenn eine Quelle ausgewählt und die Verbindung steht.
+- Unten, direkt über der Versionsanzeige, steht der Steuerbereich: oben eine Spulleiste (Schieberegler für die ausgewählte Quelle), darunter zentriert **−10 s**, **Pause**, **Weiter**, **+10 s**. Aktiv nur, wenn eine Quelle ausgewählt und die Verbindung steht; Spulleiste und ±10 s zusätzlich nur, solange das Video läuft oder pausiert ist. Die Spulleiste liegt bewusst außerhalb der Karten, weil diese alle 200 ms neu gezeichnet werden.
 - Angezeigt werden nur Medienquellen (`ffmpeg_source`, `vlc_source`), die in der aktuellen Programm-Szene aktiviert sind und den Status Läuft oder Pause haben.
 
 ## Technische Eckpunkte
 
 - Protokoll: obs-websocket v5 über rohes `WebSocket`, Authentifizierung per SHA-256 (`crypto.subtle`), Event-Subscriptions `2047`.
-- Genutzte Requests: `GetCurrentProgramScene`, `GetSceneItemList`, `GetMediaInputStatus`, `TriggerMediaInputAction`.
+- Genutzte Requests: `GetCurrentProgramScene`, `GetSceneItemList`, `GetMediaInputStatus`, `TriggerMediaInputAction`, `SetMediaInputCursor` (Spulen, Millisekunden).
 - Genutzte Events: `CurrentProgramSceneChanged`, `SceneItemEnableStateChanged`, `SceneItemCreated`, `SceneItemRemoved`, `MediaInputPlayback*`.
 - Zeitangaben von obs-websocket sind Millisekunden. Zwischen den Abfragen (1 Sekunde) wird die Anzeige lokal interpoliert.
 - Verbindung baut sich bei Abbruch alle 3 Sekunden automatisch neu auf. Bei Close-Code 4009 (Authentifizierung fehlgeschlagen) kein Reconnect, stattdessen werden die Einstellungen geöffnet.
