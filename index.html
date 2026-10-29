@@ -120,9 +120,15 @@
   #empty-text{ font-size:13px; max-width: 220px; }
 
   #controls{
-    flex-shrink:0; display:flex; justify-content:center; gap:8px;
+    flex-shrink:0; display:flex; flex-direction:column; align-items:stretch; gap:8px;
     padding: 8px 12px; border-top: 1px solid var(--border);
   }
+  .ctrl-row{ display:flex; justify-content:center; gap:8px; flex-wrap:wrap; }
+  #seek-wrap{ display:flex; align-items:center; gap:8px; font-size:11px; color:var(--muted); }
+  #seek-wrap span{ min-width:34px; }
+  #seek-wrap span:last-child{ text-align:right; }
+  #seek{ flex:1; min-width:0; margin:0; accent-color: var(--live); cursor:pointer; }
+  #seek:disabled{ opacity:.35; cursor:not-allowed; }
   .ctrl-btn{
     display:flex; align-items:center; gap:5px;
     background: var(--panel-2); border:1px solid var(--border); color: var(--text);
@@ -179,11 +185,20 @@
   </main>
 
   <div id="controls">
-    <button id="btn-pause" class="ctrl-btn" disabled>⏸ Pause</button>
-    <button id="btn-play" class="ctrl-btn" disabled>▶ Weiter</button>
+    <div id="seek-wrap">
+      <span id="seek-left" class="mono">0:00</span>
+      <input id="seek" type="range" min="0" max="1" step="1" value="0" disabled>
+      <span id="seek-right" class="mono">0:00</span>
+    </div>
+    <div class="ctrl-row">
+      <button id="btn-back" class="ctrl-btn" disabled>⏪ −10 s</button>
+      <button id="btn-pause" class="ctrl-btn" disabled>⏸ Pause</button>
+      <button id="btn-play" class="ctrl-btn" disabled>▶ Weiter</button>
+      <button id="btn-fwd" class="ctrl-btn" disabled>+10 s ⏩</button>
+    </div>
   </div>
 
-  <footer><span class="version">v0.9</span><br>Entwickelt für JungleCraft Livestreams<br>erstellt von Junglecraft Social-Media-Team</footer>
+  <footer><span class="version">v1.0</span><br>Entwickelt für JungleCraft Livestreams<br>erstellt von Junglecraft Social-Media-Team</footer>
 </div>
 
 <script>
@@ -195,6 +210,7 @@
   let currentScene = null;
   let mediaSourceNames = [];
   let selectedSource = '';
+  let seeking = false;      // true, solange der Spulregler gezogen wird
   let statuses = {};
   const LINGER_MS = 5000;   // so lange bleibt eine beendete Karte sichtbar
   const FADE_MS = 1000;     // Ausblenden in der letzten Sekunde
@@ -369,6 +385,59 @@
     const enabled = identified && !!selectedSource;
     $('btn-pause').disabled = !enabled;
     $('btn-play').disabled = !enabled;
+    updateSeek();
+  }
+
+  // Aktueller Stand der ausgewählten Quelle (nur wenn sie läuft/pausiert ist)
+  function seekInfo(){
+    const st = selectedSource && statuses[selectedSource];
+    if(!st) return null;
+    const playing = st.state === 'OBS_MEDIA_STATE_PLAYING';
+    if(!playing && st.state !== 'OBS_MEDIA_STATE_PAUSED') return null;
+    if(!(st.duration > 0)) return null;
+    let cursor = st.cursor;
+    if(playing) cursor = Math.min(st.duration, st.cursor + (performance.now() - st.ts));
+    return {name: selectedSource, duration: st.duration, cursor: cursor};
+  }
+
+  function updateSeek(){
+    const info = identified ? seekInfo() : null;
+    const bar = $('seek');
+    const ok = !!info;
+    bar.disabled = !ok;
+    $('btn-back').disabled = !ok;
+    $('btn-fwd').disabled = !ok;
+    if(!ok){
+      seeking = false;
+      bar.max = 1; bar.value = 0;
+      $('seek-left').textContent = '0:00';
+      $('seek-right').textContent = '0:00';
+      return;
+    }
+    bar.max = info.duration;
+    if(!seeking){
+      bar.value = info.cursor;
+      $('seek-left').textContent = fmtTime(info.cursor);
+    }
+    $('seek-right').textContent = fmtTime(info.duration);
+  }
+
+  async function seekTo(ms){
+    const info = seekInfo();
+    if(!info) return;
+    // knapp vor dem Ende stoppen, damit das Video normal ausläuft
+    const target = Math.round(Math.max(0, Math.min(Math.max(0, info.duration - 250), ms)));
+    try{
+      await req('SetMediaInputCursor', {inputName: info.name, mediaCursor: target});
+      const st = statuses[info.name];
+      if(st){ st.cursor = target; st.ts = performance.now(); }
+    }catch(e){ /* Quelle evtl. nicht mehr vorhanden */ }
+    render();
+  }
+
+  function skip(deltaMs){
+    const info = seekInfo();
+    if(info) seekTo(info.cursor + deltaMs);
   }
 
   async function triggerMedia(action){
@@ -403,6 +472,11 @@
   }
 
   function render(){
+    renderCards();
+    updateSeek();
+  }
+
+  function renderCards(){
     const list = $('list');
     const empty = $('empty');
 
@@ -497,6 +571,15 @@
   });
   $('btn-pause').addEventListener('click', () => triggerMedia('OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PAUSE'));
   $('btn-play').addEventListener('click', () => triggerMedia('OBS_WEBSOCKET_MEDIA_INPUT_ACTION_PLAY'));
+  $('btn-back').addEventListener('click', () => skip(-10000));
+  $('btn-fwd').addEventListener('click', () => skip(10000));
+
+  const seekEl = $('seek');
+  seekEl.addEventListener('pointerdown', () => { seeking = true; });
+  seekEl.addEventListener('input', () => { $('seek-left').textContent = fmtTime(+seekEl.value); });
+  seekEl.addEventListener('change', () => { seeking = false; seekTo(+seekEl.value); });
+  ['pointerup', 'pointercancel', 'blur'].forEach(ev =>
+    seekEl.addEventListener(ev, () => { seeking = false; }));
 
   loadSettings();
   render();
